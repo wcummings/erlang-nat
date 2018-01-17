@@ -10,6 +10,8 @@
 -export([soap_request/3]).
 -export([random_port/0]).
 -export([timestamp/0]).
+-export([random_uniform/1]).
+-export([random_seed/3]).
 
 soap_request(Url, Function, Msg0) ->
     Msg =  "<?xml version=\"1.0\"?>"
@@ -42,8 +44,7 @@ soap_request(Url, Function, Msg0) ->
     end.
 
 random_port() ->
-    random:uniform(16#FFFF - 10000) + 10000.
-
+    random_uniform(16#FFFF - 10000) + 10000.
 
 timestamp() ->
     {Mega,Sec, _} = erlang_ts(),
@@ -56,3 +57,18 @@ erlang_ts() ->
         error:undef ->
             erlang:now()
     end.
+
+-ifdef(rand_module).
+%% Do nothing, rand module will automatically create a seed for us
+random_seed(A, B, C) ->
+    {A, B, C}.
+
+random_uniform(N) ->
+    rand:uniform(N).
+-else.
+random_seed(A, B, C) ->
+    random:seed(A, B, C).
+
+random_uniform(N) ->
+    random:uniform(N).
+-endif.
